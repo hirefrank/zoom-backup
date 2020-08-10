@@ -18,7 +18,10 @@ import (
 	"google.golang.org/api/option"
 )
 
-const zoomRecodingsURL = "https://api.zoom.us/v2/users/%s/recordings"
+const (
+	zoomRecodingsURL = "https://api.zoom.us/v2/users/%s/recordings?from=%s"
+	ymdFormat        = "2006-01-02"
+)
 
 type recordingListResponse struct {
 	Meetings []struct {
@@ -140,7 +143,7 @@ func requestRecordingFile(fileURL, zoomJWT string) (io.ReadCloser, error) {
 }
 
 func fetchRecordings(zoomJWT, zoomUserID string) ([]recordingFile, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf(zoomRecodingsURL, zoomUserID), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf(zoomRecodingsURL, zoomUserID, time.Now().AddDate(0, -1, 0).Format(ymdFormat)), nil)
 	if err != nil {
 		err = fmt.Errorf("failed to create new HTTP request for recordings: %w", err)
 		return nil, err
