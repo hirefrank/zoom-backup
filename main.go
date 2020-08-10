@@ -10,7 +10,6 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -80,43 +79,33 @@ func main() {
 		log.Fatal(err)
 	}
 
-	wg := sync.WaitGroup{}
-
 	for _, recording := range recordings {
-		wg.Add(1)
-		go func(recording recordingFile) {
-			fileName := recording.FileName()
-			fmt.Println("Requesting", fileName)
-			body, err := requestRecordingFile(recording.DownloadURL, zoomJWT)
-			if err != nil {
-				err = fmt.Errorf("failed to request download file: %w", err)
-				log.Println(err)
-				return
-			}
+		fileName := recording.FileName()
+		log.Println("Requesting", fileName)
+		body, err := requestRecordingFile(recording.DownloadURL, zoomJWT)
+		if err != nil {
+			err = fmt.Errorf("failed to request download file: %w", err)
+			log.Println(err)
+			return
+		}
 
-			defer body.Close()
+		defer body.Close()
 
-			fmt.Println("Getting writer", fileName)
-			sw := storageWriter(ctx, storageClient, bucket, gstoragePath+"/"+recording.FileName())
-			fmt.Println("Copying", fileName)
-			if _, err := io.Copy(sw, body); err != nil {
-				err = fmt.Errorf("Could not write file: %v", err)
-				log.Println(err)
-			}
+		log.Println("Getting writer", fileName)
+		sw := storageWriter(ctx, storageClient, bucket, gstoragePath+"/"+recording.FileName())
+		log.Println("Copying", fileName)
+		if _, err := io.Copy(sw, body); err != nil {
+			err = fmt.Errorf("Could not write file: %v", err)
+			log.Println(err)
+		}
 
-			fmt.Println("Closing", fileName)
-			if err := sw.Close(); err != nil {
-				err = fmt.Errorf("Could not put file: %v", err)
-				log.Println(err)
-			}
-			fmt.Println("Finished", recording.FileName())
-			wg.Done()
-		}(recording)
-
-		fmt.Println("Started", recording.FileName())
+		log.Println("Closing", fileName)
+		if err := sw.Close(); err != nil {
+			err = fmt.Errorf("Could not put file: %v", err)
+			log.Println(err)
+		}
+		log.Println("Finished", recording.FileName())
 	}
-
-	wg.Wait()
 }
 
 func (f recordingFile) FileName() string {
