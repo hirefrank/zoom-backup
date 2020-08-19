@@ -25,8 +25,14 @@ const (
 
 type recordingListResponse struct {
 	Meetings []struct {
+		ID             string          `json:"id"`
 		RecordingFiles []recordingFile `json:"recording_files"`
 	} `json:"meetings"`
+}
+
+type meeting struct {
+	ID    string          `json:"id"`
+	Files []recordingFile `json:"files"`
 }
 
 type recordingFile struct {
@@ -76,38 +82,43 @@ func main() {
 		log.Fatal("Error creating new storage client ", err)
 	}
 
-	recordings, err := fetchRecordings(zoomJWT, zoomUserID)
+	meetings, err := fetchRecordings(zoomJWT, zoomUserID)
 	if err != nil {
 		err = fmt.Errorf("failed to fetch recordings: %w", err)
 		log.Fatal(err)
 	}
 
-	for _, recording := range recordings {
-		fileName := recording.FileName()
-		log.Println("Requesting", fileName)
-		body, err := requestRecordingFile(recording.DownloadURL, zoomJWT)
-		if err != nil {
-			err = fmt.Errorf("failed to request download file: %w", err)
-			log.Println(err)
-			return
-		}
+	for _, meeting := range meetings {
+		for _, recording := range meeting.Files {
+			fileName := recording.FileName()
+			log.Println("Requesting", fileName)
+			body, err := requestRecordingFile(recording.DownloadURL, zoomJWT)
+			if err != nil {
+				err = fmt.Errorf("failed to request download file: %w", err)
+				log.Println(err)
+				continue
+			}
 
-		defer body.Close()
+			defer body.Close()
 
-		log.Println("Getting writer", fileName)
-		sw := storageWriter(ctx, storageClient, bucket, gstoragePath+"/"+recording.FileName())
-		log.Println("Copying", fileName)
-		if _, err := io.Copy(sw, body); err != nil {
-			err = fmt.Errorf("Could not write file: %v", err)
-			log.Println(err)
-		}
+			log.Println("Getting writer", fileName)
+			sw := storageWriter(ctx, storageClient, bucket, gstoragePath+"/"+recording.FileName())
+			log.Println("Copying", fileName)
+			if _, err := io.Copy(sw, body); err != nil {
+				err = fmt.Errorf("Could not write file: %v", err)
+				log.Println(err)
+				continue
+			}
 
-		log.Println("Closing", fileName)
-		if err := sw.Close(); err != nil {
-			err = fmt.Errorf("Could not put file: %v", err)
-			log.Println(err)
+			log.Println("Closing", fileName)
+			if err := sw.Close(); err != nil {
+				err = fmt.Errorf("Could not put file: %v", err)
+				log.Println(err)
+				continue
+			}
+			log.Println("Finished", recording.FileName())
+
 		}
-		log.Println("Finished", recording.FileName())
 	}
 }
 
@@ -142,7 +153,7 @@ func requestRecordingFile(fileURL, zoomJWT string) (io.ReadCloser, error) {
 	return resp.Body, nil
 }
 
-func fetchRecordings(zoomJWT, zoomUserID string) ([]recordingFile, error) {
+func fetchRecordings(zoomJWT, zoomUserID string) ([]meeting, error) {
 	req, err := http.NewRequest("GET", fmt.Sprintf(zoomRecodingsURL, zoomUserID, time.Now().AddDate(0, -1, 0).Format(ymdFormat)), nil)
 	if err != nil {
 		err = fmt.Errorf("failed to create new HTTP request for recordings: %w", err)
@@ -176,17 +187,18 @@ func fetchRecordings(zoomJWT, zoomUserID string) ([]recordingFile, error) {
 		return nil, err
 	}
 
-	recordings := []recordingFile{}
-	for _, meeting := range response.Meetings {
+	meetings := make([]meeting, len(response.Meetings))
+	for i, meeting := range response.Meetings {
+		meetings[i].ID = meeting.ID
 		for _, file := range meeting.RecordingFiles {
 			if file.Status == "completed" && file.FileType == "MP4" {
-				recordings = append(recordings, file)
+				meetings[i].Files = append(meetings[i].Files, file)
 			}
 
 		}
 	}
 
-	return recordings, nil
+	return meetings, nil
 }
 
 var defaultHTTPClient = &http.Client{
