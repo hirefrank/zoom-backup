@@ -25,7 +25,7 @@ const (
 
 type recordingListResponse struct {
 	Meetings []struct {
-		ID             string          `json:"id"`
+		ID             string          `json:"uuid"`
 		RecordingFiles []recordingFile `json:"recording_files"`
 	} `json:"meetings"`
 }
