@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gobuffalo/envy"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/option"
@@ -44,9 +45,23 @@ type recordingFile struct {
 }
 
 func main() {
-	zoomJWT := envy.Get("ZOOM_JWT", "")
-	if zoomJWT == "" {
-		log.Fatal("Please set ZOOM_JWT to access the zoom API.")
+	zoomAPIKey := envy.Get("ZOOM_API_KEY", "")
+	if zoomAPIKey == "" {
+		log.Fatal("Please set ZOOM_API_KEY to access the zoom API.")
+	}
+
+	zoomAPISecret := envy.Get("ZOOM_API_SECRET", "")
+	if zoomAPISecret == "" {
+		log.Fatal("Please set ZOOM_API_SECRET to access the zoom API.")
+	}
+
+	zoomJWT, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
+		Issuer:    zoomAPIKey,
+	}).SignedString([]byte(zoomAPISecret))
+	if err != nil {
+		err = fmt.Errorf("failed to sign JWT: %w", err)
+		log.Fatal(err)
 	}
 
 	zoomUserID := envy.Get("ZOOM_USER_ID", "")
@@ -71,7 +86,6 @@ func main() {
 
 	ctx := context.Background()
 
-	var err error
 	creds, err := google.CredentialsFromJSON(ctx, []byte(credsJSON), storage.ScopeReadWrite)
 	if err != nil {
 		log.Fatal("Error parsing credential from JSON ", err)
