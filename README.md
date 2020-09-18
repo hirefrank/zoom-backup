@@ -27,3 +27,13 @@ Then compile and run this code.
 1. Streams the recording to GCS with the filename containing the start time of
    the recording and recording type. E.g. `2020-09-14T15:02:39Z-shared_screen_with_gallery_views.mp4`
 1. Deletes all recordings for the meetings that were not filtered out.
+
+## Contributing
+
+Please open an issue before starting to do work. I don't expect to add many more
+features and I wouldn't want you to waste your time on something that doesn't
+fit the the project. Otherwise, I'm super happy to have your amazing help! :D
+
+## Author(s)
+
+- [codegoalie](https://codegoalie.com)
