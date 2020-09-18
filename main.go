@@ -23,6 +23,7 @@ const (
 	zoomRecordingsURL       = "https://api.zoom.us/v2/users/%s/recordings?from=%s"
 	zoomDeleteRecordingsURL = "https://api.zoom.us/v2/meetings/%s/recordings"
 	ymdFormat               = "2006-01-02"
+	tokenExpiresIn          = 35 * time.Minute
 )
 
 type recordingListResponse struct {
@@ -57,7 +58,7 @@ func main() {
 	}
 
 	zoomJWT, err := jwt.NewWithClaims(jwt.SigningMethodHS256, &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
+		ExpiresAt: time.Now().Add(tokenExpiresIn).Unix(),
 		Issuer:    zoomAPIKey,
 	}).SignedString([]byte(zoomAPISecret))
 	if err != nil {
