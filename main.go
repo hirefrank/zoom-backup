@@ -145,7 +145,7 @@ func main() {
 
 func (f recordingFile) FileName() string {
 	return fmt.Sprintf(
-		"%s-%ss.%s",
+		"%s-%s.%s",
 		f.RecordingStart,
 		f.RecordingType,
 		strings.ToLower(f.FileType),
