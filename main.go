@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	zoomRecordingsURL = "https://api.zoom.us/v2/users/%s/recordings?from=%s"
-	ymdFormat         = "2006-01-02"
+	zoomRecordingsURL       = "https://api.zoom.us/v2/users/%s/recordings?from=%s"
+	zoomDeleteRecordingsURL = "https://api.zoom.us/v2/meetings/%s/recordings"
+	ymdFormat               = "2006-01-02"
 )
 
 type recordingListResponse struct {
@@ -131,7 +132,12 @@ func main() {
 				continue
 			}
 			log.Println("Finished", recording.FileName())
+		}
 
+		log.Println("Deleting recordings for", meeting.ID)
+		err = deleteMeetingRecordings(zoomJWT, meeting.ID)
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
@@ -213,6 +219,35 @@ func fetchRecordings(zoomJWT, zoomUserID string) ([]meeting, error) {
 	}
 
 	return meetings, nil
+}
+
+func deleteMeetingRecordings(zoomJWT, meetingID string) error {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf(zoomDeleteRecordingsURL, meetingID), nil)
+	if err != nil {
+		err = fmt.Errorf("failed to create new HTTP request to delete recordings: %w", err)
+		return err
+	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", "Bearer "+zoomJWT)
+	resp, err := defaultHTTPClient.Do(req)
+	if err != nil {
+		err = fmt.Errorf("failed to delete recordings: %w", err)
+		return err
+	}
+
+	if resp.StatusCode != http.StatusNoContent {
+		buf := new(bytes.Buffer)
+		_, err = buf.ReadFrom(resp.Body)
+		_ = resp.Body.Close()
+		if err != nil {
+			err = fmt.Errorf("failed to read delete recordings response body: %w", err)
+			return err
+		}
+		err = fmt.Errorf("invalid delete recordings response code: %d -- %s", resp.StatusCode, buf.String())
+		return err
+	}
+
+	return nil
 }
 
 var defaultHTTPClient = &http.Client{
