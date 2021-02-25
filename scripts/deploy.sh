@@ -63,5 +63,5 @@ gcloud functions deploy backup-zoom-meetings-$NAME \
     ZOOM_API_KEY=$ZOOM_API_KEY, \
     ZOOM_API_SECRET=$ZOOM_API_SECRET, \
     ZOOM_USER_ID=$ZOOM_USER_ID, \
-    GSTORAGE_BUCKET=$GSTORAGE_BUCKET] \
+    GSTORAGE_BUCKET=$GSTORAGE_BUCKET,] \
 
