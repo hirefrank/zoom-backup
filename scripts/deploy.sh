@@ -58,7 +58,7 @@ gcloud functions deploy backup-zoom-meetings-$NAME \
     --region us-central1 \
     --runtime go113 \
     --trigger-topic $ZOOM_TOPIC \
-    --service-account $SERVICE_ACCOUNT
+    --service-account $SERVICE_ACCOUNT \
     --set-env-vars [PROJECT_ID=$PROJECT_ID,
     ZOOM_API_KEY=$ZOOM_API_KEY, \
     ZOOM_API_SECRET=$ZOOM_API_SECRET, \
