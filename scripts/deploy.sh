@@ -53,11 +53,11 @@ fi
 # Deployment for zoom backup.
 gcloud functions deploy backup-zoom-meetings-$NAME \
     --timeout=540s \
-    --set-env-vars PROJECT_ID=$PROJECT_ID, \
+    --set-env-vars [PROJECT_ID=$PROJECT_ID,
     ZOOM_API_KEY=$ZOOM_API_KEY, \
     ZOOM_API_SECRET=$ZOOM_API_SECRET, \
     ZOOM_USER_ID=$ZOOM_USER_ID, \
-    GSTORAGE_BUCKET=$GSTORAGE_BUCKET \
+    GSTORAGE_BUCKET=$GSTORAGE_BUCKET] \
     --entry-point ZoomBackup \
     --region us-central1 \
     --runtime go113 \
