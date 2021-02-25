@@ -15,6 +15,35 @@ then
     exit 1
 fi
 
+if [ "$PROJECT_ID" == "" ]
+then
+    >&2 echo "ERROR: PROJECT_ID is not defined"
+    exit 1
+fi
+
+if [ "$ZOOM_API_KEY" == "" ]
+then
+    >&2 echo "ERROR: ZOOM_API_KEY is not defined"
+    exit 1
+fi
+
+if [ "$ZOOM_API_SECRET" == "" ]
+then
+    >&2 echo "ERROR: ZOOM_API_SECRET is not defined"
+    exit 1
+fi
+
+if [ "$ZOOM_USER_ID" == "" ]
+then
+    >&2 echo "ERROR: ZOOM_USER_ID is not defined"
+    exit 1
+fi
+
+if [ "$GSTORAGE_BUCKET" == "" ]
+then
+    >&2 echo "ERROR: GSTORAGE_BUCKET is not defined"
+    exit 1
+fi
 if [ "$ZOOM_TOPIC" == "" ]
 then
    ZOOM_TOPIC=$NAME-zoom-backup
@@ -24,7 +53,12 @@ fi
 # Deployment for zoom backup.
 gcloud functions deploy backup-zoom-meetings-$NAME \
     --timeout=540s \
-    --env-vars-file env.yml \
+    --set-env-vars \
+    PROJECT_ID=$PROJECT_ID, \
+    ZOOM_API_KEY= $ZOOM_API_KEY, \
+    ZOOM_API_SECRET= $ZOOM_API_SECRET, \
+    ZOOM_USER_ID= $ZOOM_USER_ID, \
+    GSTORAGE_BUCKET: $GSTORAGE_BUCKET \
     --entry-point ZoomBackup \
     --region us-central1 \
     --runtime go113 \
