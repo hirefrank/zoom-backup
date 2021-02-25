@@ -1,0 +1,30 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    - name: Deploy Cloud Function
+      run: make deploy
+      env:
+        NAME: ${{ secrets.NAME }}
+        SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
+        ZOOM_TOPIC: ${{ secrets.ZOOM_TOPIC }}
+        PROJECT_ID: ${{ secrets.PROJECT_ID }}
+        ZOOM_API_KEY: ${{ secrets.ZOOM_API_KEY }}
+        ZOOM_API_SECRET: ${{ secrets.ZOOM_API_SECRET }}
+        ZOOM_USER_ID: ${{ secrets.ZOOM_USER_ID }}
+        GSTORAGE_BUCKET: ${{ secrets.GSTORAGE_BUCKET }}
+
