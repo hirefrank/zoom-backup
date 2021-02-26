@@ -133,11 +133,11 @@ func ZoomBackup(w http.ResponseWriter, r *http.Request) {
 			log.Println("Finished", recording.FileName())
 		}
 
-		// log.Println("Deleting recordings for", meeting.ID)
-		// err = deleteMeetingRecordings(zoomJWT, meeting.ID)
-		// if err != nil {
-		// 	log.Println(err)
-		// }
+		log.Println("Deleting recordings for", meeting.ID)
+		err = deleteMeetingRecordings(zoomJWT, meeting.ID)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	if err := generateURLSListHTML(ctx, storageClient, bucket); err != nil {
 		err = fmt.Errorf("Could not generate html file: %v", err)
@@ -226,34 +226,34 @@ func fetchRecordings(zoomJWT, zoomUserID string) ([]meeting, error) {
 	return meetings, nil
 }
 
-// func deleteMeetingRecordings(zoomJWT, meetingID string) error {
-// 	req, err := http.NewRequest("DELETE", fmt.Sprintf(zoomDeleteRecordingsURL, meetingID), nil)
-// 	if err != nil {
-// 		err = fmt.Errorf("failed to create new HTTP request to delete recordings: %w", err)
-// 		return err
-// 	}
-// 	req.Header.Add("Accept", "application/json")
-// 	req.Header.Add("Authorization", "Bearer "+zoomJWT)
-// 	resp, err := defaultHTTPClient.Do(req)
-// 	if err != nil {
-// 		err = fmt.Errorf("failed to delete recordings: %w", err)
-// 		return err
-// 	}
+func deleteMeetingRecordings(zoomJWT, meetingID string) error {
+ 	req, err := http.NewRequest("DELETE", fmt.Sprintf(zoomDeleteRecordingsURL, meetingID), nil)
+ 	if err != nil {
+ 		err = fmt.Errorf("failed to create new HTTP request to delete recordings: %w", err)
+ 		return err
+ 	}
+ 	req.Header.Add("Accept", "application/json")
+ 	req.Header.Add("Authorization", "Bearer "+zoomJWT)
+ 	resp, err := defaultHTTPClient.Do(req)
+ 	if err != nil {
+ 		err = fmt.Errorf("failed to delete recordings: %w", err)
+ 		return err
+ 	}
 
-// 	if resp.StatusCode != http.StatusNoContent {
-// 		buf := new(bytes.Buffer)
-// 		_, err = buf.ReadFrom(resp.Body)
-// 		_ = resp.Body.Close()
-// 		if err != nil {
-// 			err = fmt.Errorf("failed to read delete recordings response body: %w", err)
-// 			return err
-// 		}
-// 		err = fmt.Errorf("invalid delete recordings response code: %d -- %s", resp.StatusCode, buf.String())
-// 		return err
-// 	}
+ 	if resp.StatusCode != http.StatusNoContent {
+ 		buf := new(bytes.Buffer)
+ 		_, err = buf.ReadFrom(resp.Body)
+ 		_ = resp.Body.Close()
+ 		if err != nil {
+ 			err = fmt.Errorf("failed to read delete recordings response body: %w", err)
+ 			return err
+ 		}
+ 		err = fmt.Errorf("invalid delete recordings response code: %d -- %s", resp.StatusCode, buf.String())
+ 		return err
+ 	}
 
-// 	return nil
-// }
+ 	return nil
+}
 
 var defaultHTTPClient = &http.Client{
 	Timeout: time.Second * 15 * 60,
