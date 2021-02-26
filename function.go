@@ -322,6 +322,6 @@ func closeHTML() string {
 }
 
 func addLinkHTML(bucket, fileName string) string {
-	link := fmt.Sprintf("https://storage.cloud.google.com/%s/%s", bucket, fileName)
-	return fmt.Sprintf("<li><a href=\"%s\">%s/%s</a></li>", link, bucket, fileName)
+	link := fmt.Sprintf("http://%s/%s", bucket, fileName)
+	return fmt.Sprintf("<li><a href=\"%s\">%s</a></li>", link, fileName)
 }
