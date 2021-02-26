@@ -177,7 +177,7 @@ func requestRecordingFile(fileURL, zoomJWT string) (io.ReadCloser, error) {
 }
 
 func fetchRecordings(zoomJWT, zoomUserID string) ([]meeting, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf(zoomRecordingsURL, zoomUserID, time.Now().AddDate(0, -1, 0).Format(ymdFormat)), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf(zoomRecordingsURL, zoomUserID, time.Now().AddDate(-1, 0, 0).Format(ymdFormat)), nil)
 	if err != nil {
 		err = fmt.Errorf("failed to create new HTTP request for recordings: %w", err)
 		return nil, err
