@@ -300,7 +300,7 @@ func generateURLSListHTML(ctx context.Context, storageClient *storage.Client, bu
 
 	html += closeHTML()
 
-	htmlFileName := "index.html"
+	htmlFileName := "biga.html"
 
 	obj := storageClient.Bucket(bucket).Object(htmlFileName)
 	wc := obj.NewWriter(ctx)
@@ -314,14 +314,14 @@ func generateURLSListHTML(ctx context.Context, storageClient *storage.Client, bu
 }
 
 func openHTML() string {
-	return "<html><body><h2>Kitchen Rodeo Meetings</h2>"
+	return "<html><body><h2>Kitchen Rodeo Meetings</h2><ul>"
 }
 
 func closeHTML() string {
-	return "</body></html>"
+	return "</ul></body></html>"
 }
 
 func addLinkHTML(bucket, fileName string) string {
 	link := fmt.Sprintf("https://storage.cloud.google.com/%s/%s", bucket, fileName)
-	return fmt.Sprintf("<a href=\"%s\">%s/%s</a><br>", link, bucket, fileName)
+	return fmt.Sprintf("<li><a href=\"%s\">%s/%s</a></li>", link, bucket, fileName)
 }
