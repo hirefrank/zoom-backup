@@ -314,7 +314,7 @@ func generateURLSListHTML(ctx context.Context, storageClient *storage.Client, bu
 }
 
 func openHTML() string {
-	return "<html><body><h2>Kitchen Rodeo Meetings</h2><ul>"
+	return "<html><body><h2>Kitchen Rodeos</h2><ul>"
 }
 
 func closeHTML() string {
